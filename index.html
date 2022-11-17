@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Web Push</title>
+  </head>
+  <body>
+    <script>
+
+        let userSubscription = {};
+
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("/sw.js");
+      }
+
+      async function showNotification() {
+        const result = await Notification.requestPermission();
+      }
+      showNotification();
+
+      function registerForPush(pushManager) {
+        navigator.serviceWorker.ready.then((registration) => {
+          if ("PushManager" in window) {
+            const options = {
+              userVisibleOnly: true,
+              applicationServerKey:
+                "BNn-a7EoxmiIYI7t66TY-P9TkL0UtzxceFooghcrMHK5AQUtYCMy2q3-3A65jX8hDiXeA1lhKeZoCVSL-mQ1mjo",
+            };
+            registration.pushManager
+              .subscribe(options)
+              .then((subscription) => userSubscription = subscription.toJSON())
+              .catch((error) => console.log(error));
+          }
+        });
+      }
+
+
+      function sendNotification(){
+        fetch('api/SendClientNotification', {
+            method: 'POST',
+            body: JSON.stringify({
+                subscription: userSubscription,
+                message: document.getElementById('messageContent').value
+            })
+        })
+      }
+    </script>
+    <h1>Push Notification Sender</h1>
+    First, you need to : <br/>
+    <button onclick="registerForPush()">Register</button> <br/><br/>
+
+    Then, you can send yourself a message : <br/>
+    <input id="messageContent" />
+    <button onclick="sendNotification()">Send</button>
+  </body>
+</html>
